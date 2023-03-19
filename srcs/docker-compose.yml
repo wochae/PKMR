@@ -1,63 +1,58 @@
 version: '3'
 
-services:
-    mariadb:
-        container_name: mariadb
-        image: mariadb
-        build: ./requirements/mariadb
-        restart: always
-        volumes:
-            - DB:/var/lib/mysql
-        env_file:
-            - .env
-        networks:
-            - inception
-        expose:
-            - "3306"
-
-    wordpress:
-        container_name: wordpress
-        image: wordpress
-        build: ./requirements/wordpress
-        restart: always
-        depends_on:
-            - mariadb
-        volumes:
-            - WP:/var/www/wordpress
-        env_file:
-            - .env
-        networks:
-            - inception
-        expose: 
-            - "9000"
-
-    nginx:
-        container_name: nginx
-        image: nignx
-        build: ./requirements/nginx
-        restart: always
-        depends_on:
-            - wordpress
-        volumes:
-            - WP:/var/www/wordpress
-        networks:
-            - inception
-        ports:
-            - "443:443"
 volumes:
-  DB:
+  db-volume:
     driver: local
     driver_opts:
+      device: /home/wochae/data/db-data
       type: none
       o: bind
-      device: /home/wochae/data/mariadb
-  WP:
+  wp-volume:
     driver: local
     driver_opts:
+      device: /home/wochae/data/wp-data
       type: none
       o: bind
-      device: /home/wochae/data/wordpress
-
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    build: ./requirements/mariadb
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - intra
+    volumes:
+      - db-volume:/var/lib/mysql
+  nginx:
+    container_name: nginx
+    image: nginx
+    build: ./requirements/nginx
+    env_file:
+      - .env
+    ports:
+      - 443:443
+    restart: always
+    networks:
+      - intra
+    volumes:
+      - wp-volume:/var/www/html
+    depends_on:
+      - wordpress
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build: ./requirements/wordpress
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - intra
+    volumes:
+      - wp-volume:/var/www/html
+    depends_on:
+      - mariadb
 networks:
-  inception:
+  intra:
     driver: bridge

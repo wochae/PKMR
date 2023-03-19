@@ -17,9 +17,6 @@ up:
 down:
 	$(DOCKER_COMPOSE) down
 
-# setup:
-# 	sudo sh $(SETUP)
-
 clean:
 		$(DOCKER_COMPOSE) down --volumes
 
