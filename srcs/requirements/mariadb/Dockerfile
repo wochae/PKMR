@@ -1,16 +1,18 @@
-FROM    debian:buster
+FROM alpine:3.17
 
-RUN     apt-get update && apt-get upgrade -y
-RUN     apt-get install -y \
-        mariadb-server \
-        vim
+RUN mkdir -p /run/mysqld
+RUN mkdir -p /var/lib/mysql
+RUN apk update && apk upgrade
+RUN	apk add mariadb mariadb-client
 
-COPY    ./tool/mariadb_setup.sh /
+COPY ./tools/init_db.sh /tmp/init_db.sh
+RUN chown -R mysql:mysql /run/mysqld
 
-# 127.0.0.1 은 콜백 함수로서, 외부에서 접근할 수 없다. 127.0.0.1 로 root / pw 설정, # anywhere ipv4 로 설정
+RUN sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.cnf
+RUN sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/my.cnf.d/mariadb-server.cnf
 
-RUN     sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mariadb.conf.d/50-server.cnf
+RUN chmod +x /tmp/init_db.sh
 
-EXPOSE  3306
+EXPOSE 3306
 
-CMD     ["/bin/bash", "/mariadb_setup.sh"]
+ENTRYPOINT ["sh", "/tmp/init_db.sh"]

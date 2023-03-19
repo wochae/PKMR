@@ -1,30 +1,30 @@
 NAME=inception
 DOCKER_COMPOSE=docker-compose -f ./srcs/docker-compose.yml
-SETUP = -f ./srcs/requirements/tools/linux_setup.sh
+#SETUP = -f ./srcs/requirements/tools/linux_setup.sh
 
-all: mkvol up
+all: mkvol build up
 
 mkvol:
-	mkdir -p /home/wochae/data/wordpress
-	mkdir -p /home/wochae/data/mariadb
+	mkdir -p /home/wochae/data/db-data
+	mkdir -p /home/wochae/data/wp-data
 
-rmvol:
-	rm -rf /home/wochae/data
-
-setup:
-	sudo sh $(SETUP)
+build:
+	$(DOCKER_COMPOSE) build
 
 up:
-	$(DOCKER_COMPOSE) up --build -d
+	$(DOCKER_COMPOSE) up -d
 
 down:
 	$(DOCKER_COMPOSE) down
 
-clean: down
-	docker system prune -a
+# setup:
+# 	sudo sh $(SETUP)
 
-fclean: clean rmvol
+clean:
+		$(DOCKER_COMPOSE) down --volumes
 
-re: fclean all
+fclean: clean
+		docker system prune -a
+		sudo rm -rf /home/wochae/data
 
-.PHONY: all mkvol rmvol setup up down clean fclean re
+.PHONY: mkvol build up clean fclean

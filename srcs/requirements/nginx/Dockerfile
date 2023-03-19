@@ -1,18 +1,20 @@
-FROM	debian:buster
+FROM alpine:3.17
 
-RUN	apt-get update && apt-get upgrade -y
-RUN	apt-get install -y \
-	nginx \
-	openssl \
-	vim
+RUN apk update && apk upgrade
+RUN apk add nginx \
+		openssl
 
-COPY    ./conf/default /etc/nginx/sites-available/default
+COPY ./conf/default.conf /etc/nginx/http.d
 
-# -x509: 인증서 종류 -nodes: 비밀번호 없이 인증서 생성
-RUN	openssl req -newkey rsa:2048 -x509 -nodes -days 365 \ 
-	-subj "/C=KR/ST=Seoul/O=42Seoul/OU=Gun/emailAddress=wochae@student.seoul42.kr/CN=www.wochae.42.fr" \
-	-keyout /etc/ssl/private/private_inception_server.key -out /etc/ssl/certs/inception_server.crt
+RUN openssl req \
+        -x509 \
+        -days 365 \
+        -nodes \
+        -newkey rsa:2048 \
+        -keyout /etc/ssl/private/nginx.key \
+        -out /etc/ssl/certs/nginx.crt \
+        -subj "/C=KR/ST=Seoul/L=Gaepo/O=42Seoul/OU=Develop/CN=wochae_blog"
 
-EXPOSE	443 
+EXPOSE 443
 
-ENTRYPOINT	["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]
