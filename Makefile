@@ -2,17 +2,14 @@ NAME=inception
 DOCKER_COMPOSE=docker-compose -f ./srcs/docker-compose.yml
 #SETUP = -f ./srcs/requirements/tools/linux_setup.sh
 
-all: mkvol build up
+all: mkvol up
 
 mkvol:
 	mkdir -p /home/wochae/data/db-data
 	mkdir -p /home/wochae/data/wp-data
 
-build:
-	$(DOCKER_COMPOSE) build
-
 up:
-	$(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up --build -d
 
 down:
 	$(DOCKER_COMPOSE) down
